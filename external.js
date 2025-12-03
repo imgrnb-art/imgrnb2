@@ -1,8 +1,8 @@
-// == Cytube 5 URL BOX 一括追加（最終版） ==
+// == Cytube 5 URL BOX 一括追加（JSのみ、CSS分離版） ==
 (function() {
     console.log("[Cytube] Multi URL BOX Loaded");
 
-    const BOX_COUNT = 5;
+    const BOX_COUNT = 5; // BOXの数
 
     function addUI() {
         if(document.getElementById("multi-url-boxes")) return;
@@ -16,32 +16,18 @@
 
         const container = document.createElement("div");
         container.id = "multi-url-boxes";
-        container.style.display = "inline-flex";
-        container.style.flexDirection = "row";
-        container.style.alignItems = "center";
-        container.style.marginLeft = "6px";
 
         const boxes = [];
         for(let i=0; i<BOX_COUNT; i++){
             const input = document.createElement("input");
             input.type = "text";
             input.placeholder = `URL ${i+1}`;
-            input.style.height = "28px";
-            input.style.fontSize = "12px";
-            input.style.marginRight = "4px";
-            input.style.padding = "2px 4px";
-            input.style.borderRadius = "3px";
-            input.style.border = "1px solid #888";
-            input.style.width = "150px";
             boxes.push(input);
             container.appendChild(input);
         }
 
         const regBtn = document.createElement("button");
         regBtn.textContent = "順番に追加";
-        regBtn.className = "btn"; 
-        regBtn.style.height = "28px";
-        regBtn.style.fontSize = "12px";
         container.appendChild(regBtn);
 
         addBtn.parentNode.insertBefore(container, addBtn.nextSibling);
@@ -52,12 +38,8 @@
 
             urls.forEach(url => {
                 try {
-                    // 現行 Cytube 互換方式
-                    socket.emit("queue", {
-                        id: url,
-                        type: "media",
-                        pos: "end"
-                    });
+                    // 現行Cytube互換で追加
+                    socket.emit("playlistAdd", { pos: "end", src: url });
                     console.log("[Cytube] 追加:", url);
                 } catch(e) {
                     console.error("[Cytube] 追加失敗:", url, e);
