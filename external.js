@@ -1,30 +1,17 @@
-// Cytube 最新仕様対応: textarea 1つから複数 URL を登録
-(function() {
-    const btn = document.getElementById("multi-url-button");
-    const textarea = document.getElementById("multi-url-input");
-    if (!btn || !textarea) return;
+// 各ボタンにクリックイベントを追加
+document.querySelectorAll('.multi-url-add').forEach((btn, idx) => {
+    btn.addEventListener('click', () => {
+        const urlInput = document.querySelectorAll('.multi-url-input')[idx];
+        const url = urlInput.value.trim();
+        if (!url) return alert('URLを入力してください');
 
-    function detectType(url) {
-        if (/youtube\.com|youtu\.be/.test(url)) return "yt";
-        if (/nicovideo\.jp/.test(url)) return "nicovideo";
-        return null;
-    }
-
-    btn.onclick = () => {
-        const urls = textarea.value.split("\n").map(u => u.trim()).filter(Boolean);
-        if (urls.length === 0) return alert("URL を 1つ以上入力してください");
-
-        urls.forEach(url => {
-            const type = detectType(url);
-            if (!type) {
-                console.warn("未対応メディア: " + url);
-                alert("未対応のメディア: " + url);
-                return;
-            }
-            socket.emit("playlistAdd", { pos: "end", type: type, url: url });
-            console.log("追加:", url, "type:", type);
-        });
-
-        alert(`${urls.length} 件の URL を追加しました`);
-    };
-})();
+        // Cytube の「末尾に追加」関数を呼び出す
+        try {
+            queueAddEnd(url); // Cytube標準関数。必要に応じて開始位置やオプションも追加可能
+            urlInput.value = ''; // 入力後クリア
+        } catch (e) {
+            console.error('動画追加エラー', e);
+            alert('動画を追加できませんでした');
+        }
+    });
+});
