@@ -44,7 +44,65 @@ for (let i = 1; i <= 5; i++) {
     row.appendChild(input);
     row.appendChild(button);
     multiUrlDiv.appendChild(row);
+
 }
+
+(function() {
+    // 追加用の親コンテナを作成
+    const multiUrlContainer = document.createElement('div');
+    multiUrlContainer.id = 'multi-url-box';
+    multiUrlContainer.style.padding = '10px';
+    multiUrlContainer.style.border = '1px solid #666';
+    multiUrlContainer.style.marginTop = '10px';
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.textContent = '複数URL登録を開く/閉じる';
+    toggleBtn.style.marginBottom = '8px';
+    toggleBtn.onclick = () => {
+        if (multiUrls.style.display === 'none') multiUrls.style.display = 'block';
+        else multiUrls.style.display = 'none';
+    };
+    multiUrlContainer.appendChild(toggleBtn);
+
+    const multiUrls = document.createElement('div');
+    multiUrls.style.display = 'none';
+    multiUrls.style.marginTop = '8px';
+    multiUrlContainer.appendChild(multiUrls);
+
+    // URLボックスを最大5つ作成
+    const urlBoxes = [];
+    for (let i = 0; i < 5; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = '4px';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = `URL ${i + 1}`;
+        input.style.width = '70%';
+        input.style.marginRight = '4px';
+
+        const btn = document.createElement('button');
+        btn.textContent = '末尾に追加';
+        btn.onclick = () => {
+            if (input.value.trim()) {
+                // CyTubeのqueue_endボタンを使って末尾追加
+                const urlInput = document.getElementById('mediaurl');
+                urlInput.value = input.value.trim();
+                document.getElementById('queue_end').click();
+                input.value = '';
+            }
+        };
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(btn);
+        multiUrls.appendChild(wrapper);
+        urlBoxes.push({input, btn});
+    }
+
+    // ページに追加（右コントロール下）
+    const rightControls = document.getElementById('rightcontrols');
+    rightControls.appendChild(multiUrlContainer);
+})();
 
 // ページに追加
 container.appendChild(multiUrlDiv);
+
