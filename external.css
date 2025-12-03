@@ -1,3 +1,4 @@
+/* external.css: 強制上書きで確実に Cytube 上で反映 */
 #multi-url-boxes {
     display: inline-flex !important;
     flex-direction: row !important;
