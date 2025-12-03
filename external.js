@@ -1,66 +1,55 @@
-// == Cytube Multi URL Adder ==
-// Cytube の外部 JS として動きます。
+// ======= ロード確認用 =======
+console.log("[Cytube] external.js loaded");
 
-(function () {
-    console.log("[Cytube] Multi URL Adder Loaded");
+// ======= Cytube の準備ができたら UI を追加 =======
+function addUI() {
+    // すでに UI がある場合はスキップ
+    if (document.getElementById("multi-url-box")) return;
 
-    // ---- 右上に追加ボタンを作る ----
-    const btn = document.createElement("button");
-    btn.textContent = "複数URL追加";
-    btn.style.position = "fixed";
-    btn.style.top = "10px";
-    btn.style.right = "10px";
-    btn.style.zIndex = 9999;
-    btn.style.padding = "6px 10px";
-    btn.style.background = "#1976d2";
-    btn.style.color = "#fff";
-    btn.style.border = "none";
-    btn.style.borderRadius = "6px";
-    btn.style.cursor = "pointer";
-    btn.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
-    document.body.appendChild(btn);
-
-    btn.addEventListener("click", () => {
-        const text = prompt(
-            "URL を改行で複数貼り付けてください\n\n例:\nhttps://youtu.be/xxxx\nhttps://www.youtube.com/watch?v=yyyy"
-        );
-
-        if (!text) return;
-
-        const urls = text
-            .split(/\r?\n/)
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
-
-        if (urls.length === 0) {
-            alert("URL がありません");
-            return;
-        }
-
-        addSequential(urls);
-    });
-
-    // ---- Cytube に順番で追加する処理 ----
-    function addSequential(urls) {
-        let index = 0;
-
-        const timer = setInterval(() => {
-            if (index >= urls.length) {
-                clearInterval(timer);
-                alert(`追加完了：${urls.length} 件`);
-                return;
-            }
-
-            const url = urls[index];
-            console.log("[Cytube] 追加中:", url);
-
-            // Cytube playlist API
-            socket.emit("playlistAdd", {
-                pos: "end",   // 最後に追加
-                src: url
-            });
-
-            index++;
-        }, 500); // ← 追加間隔（0.5秒）好みで調整可
+    // 挿入先（Cytube の右側のコントロールパネル）
+    const target = document.getElementById("videocontrols");
+    if (!target) {
+        console.log("[Cytube] #videocontrols が見つからず待機…");
+        setTimeout(addUI, 1000);
+        return;
     }
-})();
+
+    // UI の HTML
+    const box = document.createElement("div");
+    box.id = "multi-url-box";
+    box.innerHTML = `
+        <div style="padding:10px; border:1px solid #666; margin-top:10px;">
+            <h3>複数URL登録</h3>
+            <textarea id="multi-url-input"
+                style="width:100%; height:100px;"></textarea>
+            <button id="multi-url-button" style="margin-top:8px;">
+                順番に登録
+            </button>
+        </div>
+    `;
+
+    target.appendChild(box);
+    console.log("[Cytube] UI added!");
+
+    // ボタンクリック処理
+    document.getElementById("multi-url-button").onclick = () => {
+        const text = document.getElementById("multi-url-input").value.trim();
+        if (!text) return alert("URL を入力してください");
+
+        const list = text.split("\n").map(s => s.trim()).filter(Boolean);
+
+        // Cytube の addqueue を順番に実行
+        list.forEach(url => {
+            socket.emit("queue", {
+                id: url,
+                type: "url",
+                pos: "end"
+            });
+        });
+
+        alert("登録完了！");
+    };
+}
+
+// DOM ができてから UI を追加
+setTimeout(addUI, 2000);
